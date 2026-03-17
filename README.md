@@ -1,18 +1,14 @@
-# ⚡ SpikeWhy
+# SpikeWhy
 
-> Automatically trace cloud cost spikes back to the PR that caused them.
+Automatically trace cloud cost spikes back to the PR that caused them.
 
-Most FinOps tools tell you *what* spiked. SpikeWhy tells you *why* — connecting your cloud bill directly to the commit that caused it.
+Most FinOps tools tell you what spiked. SpikeWhy tells you why -- connecting your cloud bill directly to the commit that caused it.
 
 ---
 
 ## The Problem
 
-Your AWS bill jumped $840 on Tuesday. You spend 3 hours manually cross-referencing:
-- CloudWatch metrics
-- GitHub deploy history  
-- PR diffs
-- Slack messages
+Your AWS bill jumped $840 on Tuesday. You spend 3 hours manually cross-referencing CloudWatch metrics, GitHub deploy history, PR diffs, and Slack messages.
 
 SpikeWhy does this in seconds.
 
@@ -22,16 +18,16 @@ SpikeWhy does this in seconds.
 
 ```
 Cost spike detected
-       ↓
+       |
 Find deploys in spike window (GitHub Actions)
-       ↓
+       |
 Fetch PR diffs for those deploys
-       ↓
+       |
 Score diffs for infrastructure changes
-       ↓
+       |
 LLM reasons about most likely cause
-       ↓
-Report: "PR #47 by @tashil — ECS memory 512MB → 4096MB (87% confidence)"
+       |
+Report: "PR #47 by @tashil -- ECS memory 512MB -> 4096MB (87% confidence)"
 ```
 
 ---
@@ -41,7 +37,7 @@ Report: "PR #47 by @tashil — ECS memory 512MB → 4096MB (87% confidence)"
 ```bash
 pip install spikewhy
 
-# No API keys needed — try the demo first
+# No API keys needed -- try the demo first
 spikewhy --demo
 
 # Run against your real repo
@@ -59,20 +55,20 @@ spikewhy --repo yourorg/yourrepo --since 7d --output discord
 
 ```
 ============================================================
-⚠️  COST SPIKE DETECTED — 2026-03-10
+COST SPIKE DETECTED -- 2026-03-10
 
-💸  Spend: $342.18 (avg: $121.40, +$220.78 / 2.82x normal)
-🔥  Top affected: ECS $154, EC2 $98, RDS $68
+Spend: $342.18 (avg: $121.40, +$220.78 / 2.82x normal)
+Top affected: ECS $154, EC2 $98, RDS $68
 
-🔴  Most likely cause: PR #47 by @tashil
-📊  Confidence: 87%
-🔍  Why: ECS task definition changed memory from 512MB to 4096MB with desired_count increased from 1 to 4
-⚙️   Change: memory = 4096, desired_count = 4
-✅  Fix: Roll back ECS task definition memory to 512MB or reduce desired_count
+Most likely cause: PR #47 by @tashil
+Confidence: 87%
+Why: ECS task definition changed memory from 512MB to 4096MB with desired_count increased from 1 to 4
+Change: memory = 4096, desired_count = 4
+Fix: Roll back ECS task definition memory to 512MB or reduce desired_count
 
 Deploys investigated: 2
-  • PR #47 — feat: increase ECS task memory for better performance (cost signals: 4)
-  • PR #46 — fix: update node version in Dockerfile (cost signals: 0)
+  - PR #47 -- feat: increase ECS task memory for better performance (cost signals: 4)
+  - PR #46 -- fix: update node version in Dockerfile (cost signals: 0)
 ============================================================
 ```
 
@@ -91,7 +87,7 @@ Deploys investigated: 2
 ## Roadmap
 
 - [x] Cost anomaly detection
-- [x] GitHub Actions deploy correlation  
+- [x] GitHub Actions deploy correlation
 - [x] PR diff scoring
 - [x] LLM causal reasoning
 - [x] Discord alerts
@@ -108,8 +104,8 @@ Deploys investigated: 2
 | Tool | What it does | What it misses |
 |---|---|---|
 | AWS Cost Explorer | Shows cost by service | No link to code changes |
-| Infracost | Estimates cost before deploy | Doesn't track post-deploy actuals |
-| Datadog | Metrics + anomaly detection | No PR/commit correlation |
+| Infracost | Estimates cost before deploy | Does not track post-deploy actuals |
+| Datadog | Metrics and anomaly detection | No PR/commit correlation |
 | Vantage / Finout | FinOps dashboards | No engineering workflow integration |
 
 SpikeWhy is the missing link.

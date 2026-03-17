@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SpikeWhy CLI — main entrypoint.
+SpikeWhy CLI -- main entrypoint.
 
 Usage:
   spikewhy --repo owner/repo --since 7d
@@ -20,19 +20,17 @@ from .reporter import print_report, send_discord, output_json
 
 def run_demo():
     """Run SpikeWhy against simulated cost data with no external API calls."""
-    print("\n🔍 SpikeWhy — Demo Mode (simulated cost data)\n")
+    print("\nSpikeWhy -- Demo Mode (simulated cost data)\n")
 
-    # Generate 30 days of cost data with injected spikes
     records = generate_baseline(days=30)
     anomalies = detect_anomalies(records)
 
-    print(f"📊 Generated 30 days of cost data")
-    print(f"⚠️  Detected {len(anomalies)} anomalies\n")
+    print(f"Generated 30 days of cost data")
+    print(f"Detected {len(anomalies)} anomalies\n")
 
     for anomaly in anomalies:
         print(f"Spike on {anomaly['date']}: ${anomaly['cost']} ({anomaly['spike_ratio']}x normal)")
 
-        # In demo mode, fabricate a realistic candidate PR
         demo_candidates = [
             {
                 "run": {"id": "demo-run-1", "name": "Deploy to Production"},
@@ -47,9 +45,9 @@ def run_demo():
                     "score": 4,
                     "keywords": ["memory", "ecs", "fargate", "desired"],
                     "relevant_lines": [
-                        '+  memory = 4096  # was 512',
-                        '+  cpu    = 2048  # was 256',
-                        '+  desired_count = 4  # was 1',
+                        "+  memory = 4096  # was 512",
+                        "+  cpu    = 2048  # was 256",
+                        "+  desired_count = 4  # was 1",
                     ]
                 }
             },
@@ -65,7 +63,7 @@ def run_demo():
                 "scoring": {
                     "score": 0,
                     "keywords": [],
-                    "relevant_lines": ['-FROM node:18', '+FROM node:20']
+                    "relevant_lines": ["-FROM node:18", "+FROM node:20"]
                 }
             }
         ]
@@ -78,36 +76,33 @@ def run_live(repo: str, days: int, output: str):
     """Run SpikeWhy against real GitHub + simulated cost data."""
     token = os.environ.get("GITHUB_TOKEN", "")
     if not token:
-        print("❌ GITHUB_TOKEN not set. Export it and retry.")
+        print("ERROR: GITHUB_TOKEN not set. Export it and retry.")
         sys.exit(1)
 
-    print(f"\n🔍 SpikeWhy — analysing {repo} (last {days} days)\n")
+    print(f"\nSpikeWhy -- analysing {repo} (last {days} days)\n")
 
-    # Cost data (simulated — swap for boto3 when AWS is available)
-    print("📊 Loading cost data (simulated)...")
+    print("Loading cost data (simulated)...")
     records = generate_baseline(days=days)
     anomalies = detect_anomalies(records)
 
     if not anomalies:
-        print("✅ No cost anomalies detected.")
+        print("No cost anomalies detected.")
         return
 
-    print(f"⚠️  {len(anomalies)} anomaly(s) detected\n")
+    print(f"{len(anomalies)} anomaly(s) detected\n")
 
-    # GitHub pipeline data
-    print("🔗 Fetching GitHub Actions runs...")
+    print("Fetching GitHub Actions runs...")
     runs = get_workflow_runs(repo, days=days)
-    print(f"   Found {len(runs)} successful runs\n")
+    print(f"Found {len(runs)} successful runs\n")
 
     for anomaly in anomalies:
-        print(f"🔥 Spike: {anomaly['date']} — ${anomaly['cost']} ({anomaly['spike_ratio']}x normal)")
+        print(f"Spike: {anomaly['date']} -- ${anomaly['cost']} ({anomaly['spike_ratio']}x normal)")
 
-        # Find runs in spike window
         window_runs = runs_in_window(runs, anomaly["date"], window_hours=24)
-        print(f"   Deploys in window: {len(window_runs)}")
+        print(f"Deploys in window: {len(window_runs)}")
 
         candidates = []
-        for run in window_runs[:5]:  # check top 5
+        for run in window_runs[:5]:
             pr = get_pr_for_run(repo, run)
             if not pr:
                 continue

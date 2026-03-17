@@ -1,5 +1,5 @@
 """
-Reporter — formats and delivers blame reports to Discord or stdout.
+Reporter -- formats and delivers blame reports to Discord or stdout.
 """
 
 import json
@@ -10,12 +10,6 @@ import requests
 DISCORD_WEBHOOK = os.environ.get("SPIKEWHY_DISCORD_WEBHOOK", "")
 
 
-def confidence_emoji(score: int) -> str:
-    if score >= 80: return "🔴"
-    if score >= 50: return "🟡"
-    return "🟢"
-
-
 def format_report(result: dict) -> str:
     anomaly = result["anomaly"]
     blame = result["blame"]
@@ -23,42 +17,39 @@ def format_report(result: dict) -> str:
 
     pr_str = f"PR #{blame['blamed_pr']}" if blame["blamed_pr"] else "Unknown PR"
     conf = blame.get("confidence", 0)
-    emoji = confidence_emoji(conf)
 
     lines = [
-        f"⚠️  **COST SPIKE DETECTED — {anomaly['date']}**",
+        f"COST SPIKE DETECTED -- {anomaly['date']}",
         f"",
-        f"💸  Spend: **${anomaly['cost']}** (avg: ${anomaly['avg']}, +${anomaly['spike_amount']} / {anomaly['spike_ratio']}x normal)",
-        f"🔥  Top affected: {', '.join(f'{k} ${v}' for k, v in sorted(anomaly['services'].items(), key=lambda x: -x[1])[:3])}",
+        f"Spend: ${anomaly['cost']} (avg: ${anomaly['avg']}, +${anomaly['spike_amount']} / {anomaly['spike_ratio']}x normal)",
+        f"Top affected: {', '.join(f'{k} ${v}' for k, v in sorted(anomaly['services'].items(), key=lambda x: -x[1])[:3])}",
         f"",
-        f"{emoji}  **Most likely cause:** {pr_str} by @{blame['blamed_author']}",
-        f"📊  Confidence: **{conf}%**",
-        f"🔍  Why: {blame['cause']}",
-        f"⚙️   Change: {blame['specific_change']}",
-        f"✅  Fix: {blame['recommendation']}",
+        f"Most likely cause: {pr_str} by @{blame['blamed_author']}",
+        f"Confidence: {conf}%",
+        f"Why: {blame['cause']}",
+        f"Change: {blame['specific_change']}",
+        f"Fix: {blame['recommendation']}",
     ]
 
     if candidates:
         lines.append(f"")
-        lines.append(f"**Deploys investigated:** {len(candidates)}")
+        lines.append(f"Deploys investigated: {len(candidates)}")
         for c in candidates[:3]:
             pr = c.get("pr", {})
             score = c.get("scoring", {}).get("score", 0)
             if pr:
-                lines.append(f"  • PR #{pr.get('number')} — {pr.get('title', '?')[:50]} (cost signals: {score})")
+                lines.append(f"  - PR #{pr.get('number')} -- {pr.get('title', '?')[:60]} (cost signals: {score})")
 
     return "\n".join(lines)
 
 
 def print_report(result: dict):
-    """Print report to stdout."""
     print("\n" + "=" * 60)
     print(format_report(result))
     print("=" * 60 + "\n")
 
 
 def send_discord(result: dict):
-    """Send report to Discord webhook."""
     if not DISCORD_WEBHOOK:
         print("[reporter] No SPIKEWHY_DISCORD_WEBHOOK set, skipping Discord.")
         return
@@ -72,5 +63,4 @@ def send_discord(result: dict):
 
 
 def output_json(result: dict):
-    """Dump full result as JSON."""
     print(json.dumps(result, indent=2, default=str))
